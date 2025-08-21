@@ -1,0 +1,520 @@
+meta:
+  engine: 4.1.0
+
+units:
+  kx: u
+  ky: u
+
+  column_spread: U
+
+  thumb_offset: 40
+  right_thumb_shift_x: 3
+  right_thumb_shift_y: -2.1
+
+  plate_hole_width: 14
+  plate_hole_height: 14
+
+  controller_width: 17.8
+  controller_length: 35
+  controller_padding_left: 2
+  controller_padding_right: 1
+  controller_space: controller_width + controller_padding_left + controller_padding_right
+
+  outline_fillet: 6
+  outline_coefficient: 0.5
+  outline_padding: 1
+  outline_left: (-outline_coefficient kx) - outline_padding
+  outline_right: (outline_coefficient kx) + outline_padding
+  outline_top: (outline_coefficient ky) + outline_padding
+  outline_bottom: (-outline_coefficient ky) - outline_padding
+
+  hotswap_socket_height_actual: 1.85
+  hotswap_socket_height: 2
+
+  m2_screw_diameter: 2
+  m2_screw_head_diameter: 3.8
+  m2_screw_head_height: 2
+  screw_hole_radius: 0.5 (1.1 m2_screw_diameter)
+  screw_head_radius: 0.5 (m2_screw_head_diameter + 0.7)
+  screw_head_height: m2_screw_head_height + 0.5
+
+  threaded_insert_height: 3
+  threaded_insert_radius: 1.5
+  standoff_radius: threaded_insert_radius + 1
+
+  plate_thickness: 1.5
+  pcb_thickness: 1.6
+  pcb_top_to_plate_top: 5
+  case_wall_thickness: 2
+  case_bottom_thickness_minus_screw_head_height: 1.5
+  case_bottom_thickness: screw_head_height + case_bottom_thickness_minus_screw_head_height
+  case_wall_height: case_bottom_thickness + hotswap_socket_height + pcb_thickness + pcb_top_to_plate_top
+  case_wall_height_minus_plate: case_wall_height - pcb_top_to_plate_top
+
+  screw_length: case_bottom_thickness_minus_screw_head_height + hotswap_socket_height + pcb_thickness + pcb_top_to_plate_top - plate_thickness
+
+tl_screw: &top_left_screw
+  what: circle
+  where:
+    ref: [fingers_pinky_home]
+    shift: [0.5kx, -0.1ky]
+tm_screw: &top_right_screw
+  what: circle
+  where:
+    ref: [fingers_index_home]
+    shift: [0.5kx, -0.1ky]
+br_screw: &bottom_right_screw
+  what: circle
+  where:
+    ref: [fingers_inner_bottom]
+    shift: [0, -0.5thumb_offset]
+
+points:
+  mirror: 115
+  zones:
+    fingers:
+      anchor.shift: [140, -160] # place in kicad workspace
+      key.spread: column_spread
+      columns:
+        pinky:
+          rows:
+            bottom.net_from: P10
+            home.net_from: P5
+            top.net_from: P4
+        ring:
+          rows:
+            bottom.net_from: P16
+            home.net_from: P6
+            top.net_from: P3
+        middle:
+          rows:
+            bottom.net_from: P14
+            home.net_from: P7
+            top.net_from: P2
+        index:
+          rows:
+            bottom.net_from: P15
+            home.net_from: P8
+            top.net_from: P1
+        inner:
+          rows:
+            bottom.net_from: P18
+            home.net_from: P9
+            top.net_from: P0
+
+    thumbs:
+      anchor:
+        ref: fingers_index_bottom
+        shift: [0, -thumb_offset]
+      columns:
+        left:
+          rows.thumb.net_from: P19
+        center:
+          rows.thumb.net_from: P20
+        right:
+          rows.thumb.net_from: P21
+          key:
+            splay: -15
+            shift: [right_thumb_shift_x, right_thumb_shift_y]
+
+outlines:
+  keys:
+    - what: rectangle
+      where: true
+      bound: false
+      size: [kx - 0.05, ky - 0.05]
+  board:
+    - what: polygon
+      operation: stack
+      fillet: outline_fillet
+      points:
+        - ref: fingers_pinky_top
+          shift: [outline_left, outline_top]
+        - ref: fingers_inner_top
+          shift: [outline_right + controller_space, outline_top]
+        - ref: fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: fingers_index_bottom
+          shift: [outline_left, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: fingers_index_bottom
+          shift: [outline_left, outline_bottom]
+        - ref: fingers_pinky_bottom
+          shift: [outline_left, outline_bottom]
+  board_and_keys:
+    - name: board
+    - operation: subtract
+      name: keys
+
+  board_mirror:
+    - what: polygon
+      operation: stack
+      fillet: outline_fillet
+      points:
+        - ref: mirror_fingers_pinky_top
+          shift: [outline_left, outline_top]
+        - ref: mirror_fingers_inner_top
+          shift: [outline_right + controller_space, outline_top]
+        - ref: mirror_fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: mirror_fingers_index_bottom
+          shift: [outline_left, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: mirror_fingers_index_bottom
+          shift: [outline_left, outline_bottom]
+        - ref: mirror_fingers_pinky_bottom
+          shift: [outline_left, outline_bottom]
+
+  plate_holes:
+    - what: rectangle
+      where: true
+      bound: false
+      size: [plate_hole_width, plate_hole_height]
+  plate_outline:
+    - what: polygon
+      operation: stack
+      fillet: outline_fillet
+      points:
+        - ref: fingers_pinky_top
+          shift: [outline_left, outline_top]
+        - ref: fingers_inner_top
+          shift: [outline_right, outline_top]
+        - ref: fingers_inner_bottom
+          shift: [outline_right, outline_bottom]
+        - ref: fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom]
+        - ref: fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: fingers_index_bottom
+          shift: [outline_left, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: fingers_index_bottom
+          shift: [outline_left, outline_bottom]
+        - ref: fingers_pinky_bottom
+          shift: [outline_left, outline_bottom]
+  plate:
+    - name: plate_outline
+    - operation: subtract
+      name: plate_holes
+
+  plate_outline_mirror:
+    - what: polygon
+      operation: stack
+      fillet: outline_fillet
+      asym: clone
+      points:
+        - ref: mirror_fingers_pinky_top
+          shift: [outline_left, outline_top]
+        - ref: mirror_fingers_inner_top
+          shift: [outline_right, outline_top]
+        - ref: mirror_fingers_inner_bottom
+          shift: [outline_right, outline_bottom]
+        - ref: mirror_fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom]
+        - ref: mirror_fingers_inner_bottom
+          shift: [outline_right + controller_space, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: mirror_fingers_index_bottom
+          shift: [outline_left, outline_bottom - thumb_offset + right_thumb_shift_y]
+        - ref: mirror_fingers_index_bottom
+          shift: [outline_left, outline_bottom]
+        - ref: mirror_fingers_pinky_bottom
+          shift: [outline_left, outline_bottom]
+  plate_mirror:
+    - name: plate_outline_mirror
+    - operation: subtract
+      name: plate_holes
+
+  board_and_plate:
+    - name: board
+    - operation: subtract
+      name: plate_outline
+    - operation: stack
+      name: plate_holes
+
+  case_bottom:
+    - name: board
+      expand: case_wall_thickness
+
+  case_bottom_mirror:
+    - name: board_mirror
+      expand: case_wall_thickness
+
+  screw_holes:
+    - <<: *top_left_screw
+      radius: screw_hole_radius
+    - <<: *top_right_screw
+      radius: screw_hole_radius
+    - <<: *bottom_right_screw
+      radius: screw_hole_radius
+
+  screw_holes_mirror:
+    - <<: *top_left_screw
+      radius: screw_hole_radius
+      asym: clone
+    - <<: *top_right_screw
+      radius: screw_hole_radius
+      asym: clone
+    - <<: *bottom_right_screw
+      radius: screw_hole_radius
+      asym: clone
+
+  screw_head_holes:
+    - <<: *top_left_screw
+      radius: screw_head_radius
+    - <<: *top_right_screw
+      radius: screw_head_radius
+    - <<: *bottom_right_screw
+      radius: screw_head_radius
+
+  screw_head_holes_mirror:
+    - <<: *top_left_screw
+      radius: screw_head_radius
+      asym: clone
+    - <<: *top_right_screw
+      radius: screw_head_radius
+      asym: clone
+    - <<: *bottom_right_screw
+      radius: screw_head_radius
+      asym: clone
+
+  threaded_insert_holes:
+    - <<: *top_left_screw
+      radius: threaded_insert_radius
+    - <<: *top_right_screw
+      radius: threaded_insert_radius
+    - <<: *bottom_right_screw
+      radius: threaded_insert_radius
+
+  threaded_insert_holes_mirror:
+    - <<: *top_left_screw
+      radius: threaded_insert_radius
+      asym: clone
+    - <<: *top_right_screw
+      radius: threaded_insert_radius
+      asym: clone
+    - <<: *bottom_right_screw
+      radius: threaded_insert_radius
+      asym: clone
+
+  standoffs:
+    - <<: *top_left_screw
+      radius: standoff_radius
+    - <<: *top_right_screw
+      radius: standoff_radius
+    - <<: *bottom_right_screw
+      radius: standoff_radius
+
+  standoffs_mirror:
+    - <<: *top_left_screw
+      radius: standoff_radius
+      asym: clone
+    - <<: *top_right_screw
+      radius: standoff_radius
+      asym: clone
+    - <<: *bottom_right_screw
+      radius: standoff_radius
+      asym: clone
+
+  board_and_screw_holes:
+    - name: board
+    - operation: subtract
+      name: screw_holes
+
+  controller_carveout:
+    - what: rectangle
+      where:
+        ref: fingers_inner_home
+        shift: [outline_right + controller_padding_left + 0.5controller_width - 1, 0]
+      bound: false
+      size: [controller_space + 3case_wall_thickness + 5, 3U + 2outline_padding + 2case_wall_thickness + 7]
+
+  controller_carveout_mirror:
+    - what: rectangle
+      where:
+        ref: mirror_fingers_inner_home
+        shift: [outline_right + controller_padding_left + 0.5controller_width - 1, 0]
+      bound: false
+      size: [controller_space + 3case_wall_thickness + 5, 3U + 2outline_padding + 2case_wall_thickness + 7]
+
+  controller_carveout_demo:
+    - name: case_bottom
+    - operation: subtract
+      name: controller_carveout
+    - operation: stack
+      name: board
+    - operation: stack
+      name: plate_outline
+
+  full:
+    - name: board
+    - operation: subtract
+      name: plate_outline
+    - operation: stack
+      name: case_bottom
+    - operation: stack
+      name: plate_holes
+    - operation: stack
+      name: standoffs
+    - operation: stack
+      name: threaded_insert_holes
+    - operation: stack
+      name: screw_holes
+
+  full_mirror:
+    - name: board_mirror
+    - operation: subtract
+      name: plate_outline_mirror
+    - operation: stack
+      name: case_bottom_mirror
+    - operation: stack
+      name: plate_holes
+    - operation: stack
+      name: standoffs_mirror
+    - operation: stack
+      name: threaded_insert_holes_mirror
+    - operation: stack
+      name: screw_holes_mirror
+
+pcbs:
+  t-rexth:
+    outlines:
+      - outline: board_and_screw_holes
+    footprints:
+      mx:
+        what: mx_routed_reversible
+        where: -/mirror/
+        params:
+          keycaps: true
+          from: "{{net_from}}"
+          to: GND
+      controller:
+        what: nice_nano_pretty
+        where:
+          ref: fingers_inner_top
+          shift: [outline_right + controller_padding_left + 0.5controller_width - 1, -0.22controller_length]
+        params:
+          show_instructions: false
+          show_silk_labels: false
+          show_via_labels: false
+      logo_image_front:
+        what: t_rexth_logo
+        where:
+          ref: fingers_inner_bottom
+          shift: [outline_right + controller_padding_left + 0.5controller_width - 1, 5]
+      logo_image_back:
+        what: t_rexth_logo
+        where:
+          ref: fingers_inner_bottom
+          shift: [outline_right + controller_padding_left + 0.5controller_width - 1, 5]
+        params:
+          side: B
+      logo_text_front:
+        what: t_rexth_text
+        where:
+          ref: fingers_inner_bottom
+          shift: [outline_right + controller_padding_left + 0.5controller_width - 1, -6.1]
+      logo_text_back:
+        what: t_rexth_text
+        where:
+          ref: fingers_inner_bottom
+          shift: [outline_right + controller_padding_left + 0.5controller_width - 1, -6.1]
+        params:
+          side: B
+
+cases:
+  plate_right:
+    - what: outline
+      name: standoffs
+      extrude: pcb_top_to_plate_top
+    - what: outline
+      name: threaded_insert_holes
+      operation: subtract
+      extrude: pcb_top_to_plate_top
+    - what: outline
+      name: plate
+      operation: add
+      extrude: plate_thickness
+
+  plate_left:
+    - what: outline
+      name: standoffs_mirror
+      extrude: pcb_top_to_plate_top
+    - what: outline
+      name: threaded_insert_holes_mirror
+      operation: subtract
+      extrude: pcb_top_to_plate_top
+    - what: outline
+      name: plate_mirror
+      operation: add
+      extrude: plate_thickness
+
+  bottom_left:
+    - what: outline
+      name: case_bottom
+      extrude: case_wall_height
+    - what: outline
+      name: controller_carveout
+      operation: subtract
+      extrude: case_wall_height
+    - what: outline
+      name: controller_carveout
+      operation: add
+      extrude: case_wall_height_minus_plate
+    - what: outline
+      name: case_bottom
+      operation: intersect
+      extrude: case_wall_height
+    - what: outline
+      name: board
+      operation: subtract
+      extrude: case_wall_height
+    - what: outline
+      name: case_bottom
+      operation: add
+      extrude: case_bottom_thickness
+    - what: outline
+      name: standoffs
+      operation: add
+      extrude: hotswap_socket_height + case_bottom_thickness
+    - what: outline
+      name: screw_holes
+      operation: subtract
+      extrude: hotswap_socket_height + case_bottom_thickness
+    - what: outline
+      name: screw_head_holes
+      operation: subtract
+      extrude: screw_head_height
+
+  bottom_right:
+    - what: outline
+      name: case_bottom_mirror
+      extrude: case_wall_height
+    - what: outline
+      name: controller_carveout_mirror
+      operation: subtract
+      extrude: case_wall_height
+    - what: outline
+      name: controller_carveout_mirror
+      operation: add
+      extrude: case_wall_height_minus_plate
+    - what: outline
+      name: case_bottom_mirror
+      operation: intersect
+      extrude: case_wall_height
+    - what: outline
+      name: board_mirror
+      operation: subtract
+      extrude: case_wall_height
+    - what: outline
+      name: case_bottom_mirror
+      operation: add
+      extrude: case_bottom_thickness
+    - what: outline
+      name: standoffs_mirror
+      operation: add
+      extrude: hotswap_socket_height + case_bottom_thickness
+    - what: outline
+      name: screw_holes_mirror
+      operation: subtract
+      extrude: hotswap_socket_height + case_bottom_thickness
+    - what: outline
+      name: screw_head_holes_mirror
+      operation: subtract
+      extrude: screw_head_height

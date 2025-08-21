@@ -1,0 +1,227 @@
+units:
+  u: 15
+  cap_size: 15
+  finger_spread: 20
+  column_gap: finger_spread - cap_size
+  edge_padding: 0
+  middle_stagger: 9
+  ring_stagger: -2
+  pinky_stagger: -10
+  thumb_offset_x: -3
+  thumb_offset_y: -25 - cap_size
+  pinky_to_bottom: edge_padding
+  ring_to_bottom: -1 pinky_stagger + pinky_to_bottom
+  middle_to_bottom: -1 ring_stagger + ring_to_bottom
+  thumb_gap: (-1 thumb_offset_y) - cap_size
+  index_to_bottom: thumb_gap - 3.6
+
+points:
+  key:
+    padding: cap_size
+
+    footprints:
+      choc:
+        type: choc
+        nets:
+          from: =net_from
+          to: GND
+        params:
+          reverse: true
+          hotswap: false
+          keycaps: false
+
+  zones:
+    fingers:
+      anchor: # move schematic inside outline in kicad
+        shift: [140, -160]
+
+      columns:
+
+        inner:
+          rows:
+            bottom:
+              net_from: P9
+              # top, right, bottom, left
+              bind: [0, 0, index_to_bottom, edge_padding]
+            home:
+              net_from: P10
+              bind: [0, 0, 0, edge_padding]
+            top:
+              net_from: P8
+              bind: [edge_padding, 0, 0, edge_padding]
+
+        index:
+          spread: cap_size
+          rows:
+            bottom:
+              net_from: P14
+              bind: [0, column_gap - 2, index_to_bottom, 0]
+            home:
+              net_from: P7
+              bind: [0, column_gap, 0, 0]
+            top:
+              net_from: P16
+              bind: [edge_padding, column_gap, 0, 0]
+
+        middle:
+          spread: finger_spread
+          stagger: middle_stagger
+          rows:
+            bottom:
+              net_from: P5
+              bind: [0, edge_padding, middle_to_bottom, column_gap]
+            home:
+              net_from: P15
+              bind: [0, edge_padding, 0, edge_padding]
+            top:
+              net_from: P6
+              bind: [edge_padding, edge_padding, 0, edge_padding]
+
+        ring:
+          spread: finger_spread
+          stagger: ring_stagger
+          rows:
+            bottom:
+              net_from: P19
+              bind: [0, edge_padding, ring_to_bottom, column_gap]
+            home:
+              net_from: P4
+              bind: [0, edge_padding, 0, column_gap]
+            top:
+              net_from: P18
+              bind: [edge_padding, edge_padding, 0, column_gap]
+
+        pinky:
+          spread: finger_spread
+          stagger: pinky_stagger
+          rows:
+            bottom:
+              net_from: P3
+              bind: [0, edge_padding, pinky_to_bottom, column_gap]
+            home:
+              net_from: P20
+              bind: [edge_padding, edge_padding, 0, column_gap]
+
+    thumbs:
+      anchor:
+        ref: fingers_inner_bottom
+        shift: [thumb_offset_x, thumb_offset_y]
+
+      columns:
+        thumb:
+          rows:
+            home:
+              net_from: P21
+              bind: [0, 0, 0, 0]
+
+outlines:
+  exports:
+    raw:
+      - type: keys
+        side: left
+        size: [cap_size, cap_size]
+      - type: polygon
+        points:
+          - ref: thumbs_thumb_home
+            shift: [-4, 11.7]
+          - shift: [-3.5, -4]
+          - shift: [0, -15.2]
+          - shift: [15, 0]
+          - shift: [0, 15.2]
+          - shift: [3.5, 4]
+      - operation: subtract
+        type: rectangle
+        anchor:
+          ref: fingers_index_bottom
+          shift: [8, -23]
+        size: [3, 6]
+
+    edge:
+      - type: outline
+        name: raw
+        fillet: 0.5
+
+pcbs:
+  pcb:
+    outlines:
+      edge:
+        outline: edge
+
+    footprints:
+      promicro:
+        type: promicro_rev
+        anchor:
+          rotate: 180
+          ref: fingers_inner_bottom
+          shift: [7.6, -20]
+        params:
+          orientation: up
+
+      reset:
+        type: pts636
+        nets:
+          from: GND
+          to: RST
+        anchor:
+          ref: fingers_middle_bottom
+          rotate: -90
+          shift: [4, -14.7]
+
+      power:
+        type: th_slider
+        nets:
+          from: BATT
+          to: RAW
+        anchor:
+          ref: fingers_middle_bottom
+          shift: [-6.5, -10.5]
+
+      battery_via:
+        type: via
+        nets:
+          net: BATT
+        anchor:
+          ref: fingers_inner_bottom
+          shift: [20.5, -6.5]
+
+      battery_pos_pad:
+        type: pad
+        nets:
+          net: BATT
+        anchor:
+          ref: fingers_inner_bottom
+          shift: [18.5, -6.5]
+        params:
+          text: '+'
+          align: down
+
+      battery_ground_pad:
+        type: pad
+        nets:
+          net: GND
+        anchor:
+          ref: fingers_inner_bottom
+          shift: [16, -6.5]
+        params:
+          text: '-'
+          align: down
+
+      puck:
+        type: puck
+        anchor:
+          ref: fingers_middle_home
+          shift: [9.5, -12]
+        params:
+          eastHole: false
+
+      art:
+        type: t_rex
+        anchor:
+          ref: fingers_pinky_bottom
+          shift: [-22.5, -2.5]
+
+      art_text:
+        type: t_rex_text
+        anchor:
+          ref: fingers_pinky_bottom
+          shift: [-14.2, -4.5]
